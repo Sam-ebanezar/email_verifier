@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Email Verifier - Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0 20px 40px;
+      background: #f5f7fa;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    header {
+      width: 100%;
+      max-width: 900px;
+      margin: 30px auto 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 15px;
+    }
+    header .logo {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    header .logo img {
+      height: 60px;
+      width: auto;
+      object-fit: contain;
+    }
+    header h1 {
+      font-weight: 700;
+      font-size: 1.8rem;
+      color: #3a86ff;
+      margin: 0;
+    }
+    nav {
+      font-weight: 600;
+      font-size: 14px;
+      color: #555;
+    }
+    nav span {
+      margin-right: 15px;
+    }
+    nav a {
+      color: #3a86ff;
+      text-decoration: none;
+      font-weight: 600;
+      border-bottom: 2px solid transparent;
+      transition: border-color 0.3s ease;
+    }
+    nav a:hover {
+      border-color: #3a86ff;
+    }
+
+    #drop-zone {
+      border: 3px dashed #3a86ff;
+      background: white;
+      padding: 50px 35px;
+      width: 100%;
+      max-width: 600px;
+      margin: 30px auto 10px;
+      cursor: pointer;
+      border-radius: 15px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: #3a86ff;
+      transition: background-color 0.3s, border-color 0.3s;
+      user-select: none;
+      box-shadow: 0 10px 25px rgba(58, 134, 255, 0.15);
+    }
+    #drop-zone.hover {
+      background-color: #eaf4ff;
+      border-color: #1e5fd3;
+      color: #1e5fd3;
+    }
+    #drop-zone:focus {
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(58, 134, 255, 0.4);
+    }
+    #file-input {
+      display: none;
+    }
+
+    section#jobs {
+      width: 100%;
+      max-width: 700px;
+      margin: 20px auto 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .job-block {
+      background: #fff;
+      border-radius: 15px;
+      padding: 20px 25px;
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.08);
+      text-align: left;
+      font-size: 14px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .job-block strong {
+      font-size: 1.15rem;
+      color: #222;
+      margin-bottom: 10px;
+    }
+    .progress-container {
+      background: #e1e5ea;
+      border-radius: 12px;
+      overflow: hidden;
+      height: 20px;
+      margin-bottom: 10px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .progress-bar {
+      height: 100%;
+      background: #3a86ff;
+      width: 0%;
+      border-radius: 12px;
+      transition: width 0.25s ease;
+      box-shadow: 0 2px 8px #3a86ffaa;
+    }
+    .status {
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 8px;
+      min-height: 20px;
+    }
+    .log-line {
+      font-family: monospace;
+      font-size: 13px;
+      color: #888;
+      min-height: 18px;
+      margin-bottom: 12px;
+      white-space: nowrap;
+      overflow-x: auto;
+    }
+    .actions {
+      font-size: 13px;
+    }
+    .actions a {
+      color: #3a86ff;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-right: 15px;
+      user-select: none;
+      transition: color 0.2s;
+    }
+    .actions a:hover {
+      color: #1e5fd3;
+    }
+    .close-job {
+      position: absolute;
+      top: 18px;
+      right: 20px;
+      font-size: 18px;
+      color: #bbb;
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.3s ease;
+    }
+    .close-job:hover {
+      color: #3a86ff;
+    }
+
+    footer {
+      margin-top: 50px;
+      font-size: 13px;
+      text-align: center;
+      color: #666;
+      max-width: 900px;
+      width: 100%;
+    }
+    footer a {
+      color: #3a86ff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      nav {
+        margin-top: 10px;
+      }
+      #drop-zone {
+        max-width: 100%;
+        padding: 30px 20px;
+        font-size: 1.1rem;
+      }
+      section#jobs {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Company Logo" /><br>
+      <br><h1>Email Verifier </h1>
+    </div>
+    <nav>
+      <span>Logged in as <strong>{{ g.user.username }}</strong></span>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+  </header>
+  <div id="drop-zone" tabindex="0">Drop CSV, TXT, or Excel (.xls/.xlsx) here or click to upload</div>
+  <input type="file" id="file-input" accept=".csv,.txt,.xls,.xlsx" />
+  
+  <section id="jobs">
+    {% if jobs %}
+      {% for job_id, job in jobs.items() %}
+      <div class="job-block" data-job="{{ job_id }}">
+        <div class="close-job" title="Close job">✖</div>
+        <strong>{{ job.filename }}</strong>
+        <div class="progress-container"><div class="progress-bar"></div></div>
+        <div class="status">Starting...</div>
+        <div class="log-line"></div>
+        <div class="actions"><a class="cancel">Cancel</a></div>
+      </div>
+      {% endfor %}
+    {% endif %}
+  </section>
+
+  <footer>
+    This tool helps you find qualified leads. Now let's get you more sales with
+    <a href="https://url-factory.com/" target="_blank" rel="noopener noreferrer">URL Factory</a>
+  </footer>
+
+  <script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const jobsContainer = document.getElementById('jobs');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('hover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('hover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('hover');
+      handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
+
+    function handleFile(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      fetch('/verify', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(({ job_id }) => {
+        createJobBlock(job_id, file.name);
+      });
+    }
+
+    function createJobBlock(job_id, fileName) {
+      const block = document.createElement('div');
+      block.className = 'job-block';
+      block.setAttribute('data-job', job_id);
+      block.innerHTML = `
+        <div class="close-job" title="Close job">✖</div>
+        <strong>${fileName}</strong>
+        <div class="progress-container"><div class="progress-bar"></div></div>
+        <div class="status">Starting...</div>
+        <div class="log-line"></div>
+        <div class="actions"><a class="cancel">Cancel</a></div>
+      `;
+      jobsContainer.prepend(block);
+
+      const bar = block.querySelector('.progress-bar');
+      const status = block.querySelector('.status');
+      const logLine = block.querySelector('.log-line');
+      const cancelBtn = block.querySelector('.cancel');
+      const actions = block.querySelector('.actions');
+      const closeBtn = block.querySelector('.close-job');
+
+      let canceled = false;
+      const removeJob = () => block.remove();
+
+      cancelBtn.onclick = () => {
+        canceled = true;
+        fetch(`/cancel?job_id=${job_id}`, { method: 'POST' });
+        status.innerText = `❌ Canceled job ${job_id}`;
+        actions.innerHTML = '';
+      };
+
+      closeBtn.onclick = () => {
+        fetch(`/cancel?job_id=${job_id}`, { method: 'POST' });
+        removeJob();
+      };
+
+      const poll = setInterval(() => {
+        if (canceled) return clearInterval(poll);
+
+        fetch(`/progress?job_id=${job_id}`)
+          .then(res => res.json())
+          .then(data => {
+            bar.style.width = `${data.percent}%`;
+            status.innerText = `${data.percent}% done – Row ${data.row} of ${data.total}`;
+          });
+
+        fetch(`/log?job_id=${job_id}`)
+          .then(res => res.text())
+          .then(text => {
+            logLine.innerText = text.replace(/^\[\d+%\] \(\d+\/\d+\) /, '');
+          });
+      }, 1000);
+
+      const wait = setInterval(() => {
+        if (canceled) return clearInterval(wait);
+        fetch(`/progress?job_id=${job_id}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.percent >= 100) {
+              clearInterval(wait);
+              actions.innerHTML = `
+                <div style="margin-top: 10px;">
+                  <strong>⬇️ Download CSV:</strong><br>
+                  <div>
+                    <a href="/download?job_id=${job_id}&type=all" target="_blank" rel="noopener noreferrer">All Leads</a> |
+                    <a href="/download?job_id=${job_id}&type=valid" target="_blank" rel="noopener noreferrer">Valid Only</a>
+                  </div>
+                  <div>
+                    <a href="/download?job_id=${job_id}&type=risky" target="_blank" rel="noopener noreferrer">Risky Only</a> |
+                    <a href="/download?job_id=${job_id}&type=risky_invalid" target="_blank" rel="noopener noreferrer">Risky & Invalid</a>
+                  </div>
+                </div>
+              `;
+            }
+          });
+      }, 1500);
+    }
+
+    // On page load, initialize existing jobs progress
+    document.querySelectorAll('.job-block').forEach(block => {
+      const job_id = block.getAttribute('data-job');
+      const cancelBtn = block.querySelector('.cancel');
+      const bar = block.querySelector('.progress-bar');
+      const status = block.querySelector('.status');
+      const logLine = block.querySelector('.log-line');
+      const actions = block.querySelector('.actions');
+      const closeBtn = block.querySelector('.close-job');
+
+      let canceled = false;
+      const removeJob = () => block.remove();
+
+      cancelBtn.onclick = () => {
+        canceled = true;
+        fetch(`/cancel?job_id=${job_id}`, { method: 'POST' });
+        status.innerText = `❌ Canceled job ${job_id}`;
+        actions.innerHTML = '';
+      };
+
+      closeBtn.onclick = () => {
+        fetch(`/cancel?job_id=${job_id}`, { method: 'POST' });
+        removeJob();
+      };
+
+      const poll = setInterval(() => {
+        if (canceled) return clearInterval(poll);
+
+        fetch(`/progress?job_id=${job_id}`)
+          .then(res => res.json())
+          .then(data => {
+            bar.style.width = `${data.percent}%`;
+            status.innerText = `${data.percent}% done – Row ${data.row} of ${data.total}`;
+          });
+
+        fetch(`/log?job_id=${job_id}`)
+          .then(res => res.text())
+          .then(text => {
+            logLine.innerText = text.replace(/^\[\d+%\] \(\d+\/\d+\) /, '');
+          });
+      }, 1000);
+
+      const wait = setInterval(() => {
+        if (canceled) return clearInterval(wait);
+        fetch(`/progress?job_id=${job_id}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.percent >= 100) {
+              clearInterval(wait);
+              actions.innerHTML = `
+                <div style="margin-top: 10px;">
+                  <strong>⬇️ Download CSV:</strong><br>
+                  <div>
+                    <a href="/download?job_id=${job_id}&type=all" target="_blank" rel="noopener noreferrer">All Leads</a> |
+                    <a href="/download?job_id=${job_id}&type=valid" target="_blank" rel="noopener noreferrer">Valid Only</a>
+                  </div>
+                  <div>
+                    <a href="/download?job_id=${job_id}&type=risky" target="_blank" rel="noopener noreferrer">Risky Only</a> |
+                    <a href="/download?job_id=${job_id}&type=risky_invalid" target="_blank" rel="noopener noreferrer">Risky & Invalid</a>
+                  </div>
+                </div>
+              `;
+            }
+          });
+      }, 1500);
+    });
+  </script>
+</body>
+</html>
+
